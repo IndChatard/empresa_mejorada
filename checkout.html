@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Pedido - Industria Chatard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Sans+Pro:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1E40AF',
+                        'secondary-blue': '#3B82F6',
+                        'light-blue': '#60A5FA',
+                        'success-green': '#10B981',
+                        'warning-red': '#EF4444',
+                        'accent-orange': '#F59E0B',
+                        'industrial-gray': '#374151',
+                        'light-gray': '#F8FAFC',
+                        'medium-gray': '#64748B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'source': ['Source Sans Pro', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+            min-height: 100vh;
+        }
+        
+        .checkout-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(229, 231, 235, 0.6);
+            overflow: hidden;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .form-input.error {
+            border-color: #EF4444;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background: #4B5563;
+            transform: translateY(-1px);
+        }
+        
+        .order-status {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .order-status.sent {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+        }
+        
+        .order-status.confirmed {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            background: #E5E7EB;
+            color: #9CA3AF;
+        }
+        
+        .step.active .step-number {
+            background: linear-gradient(135deg, #3B82F6, #1E40AF);
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+        
+        .step:not(:last-child)::after {
+            content: '';
+            width: 60px;
+            height: 2px;
+            background: #E5E7EB;
+            margin: 0 16px;
+        }
+        
+        .step.completed:not(:last-child)::after {
+            background: linear-gradient(90deg, #10B981, #059669);
+        }
+        
+        .cart-item {
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .cart-item:hover {
+            border-color: #3B82F6;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #F8FAFC, #F1F5F9);
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 24px;
+            position: sticky;
+            top: 100px;
+        }
+        
+        .quantity-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .quantity-btn:hover {
+            background: #F3F4F6;
+            border-color: #3B82F6;
+        }
+        
+        .confirmation-modal {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            
+            .summary-card {
+                position: static;
+                margin-top: 24px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light-gray">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-primary-blue hover:text-secondary-blue transition-colors">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Volver al Inicio
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-medium-gray">
+                        Pedido Online - Industria Chatard
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Indicador de Pedido -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-industrial-gray font-inter mb-4">
+                🛒 Finalizar Mi Pedido
+            </h1>
+            <p class="text-medium-gray text-lg">
+                <strong>Te contactaremos para confirmar disponibilidad</strong> y coordinar la entrega
+            </p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <span class="ml-2 text-sm font-medium">Datos del Cliente</span>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <span class="ml-2 text-sm font-medium">Confirmación</span>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <span class="ml-2 text-sm font-medium">Contacto del Local</span>
+            </div>
+        </div>
+
+        <!-- Order Status -->
+        <div id="order-status" class="order-status">
+            <h3 class="text-xl font-semibold mb-2">📱 Paso 1: Completa tus datos</h3>
+            <p>Una vez enviado, nos contactaremos para confirmar disponibilidad y coordinar la entrega.</p>
+        </div>
+
+        <!-- Checkout Form -->
+        <div class="checkout-container">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Formulario -->
+                <div class="lg:col-span-2 p-8">
+                    <form id="checkout-form" class="space-y-6">
+                        <!-- Datos Personales -->
+                        <div>
+                            <h3 class="text-xl font-semibold text-industrial-gray mb-4 flex items-center">
+                                <span class="w-8 h-8 bg-primary-blue text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+                                Datos Personales
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">Nombre *</label>
+                                    <input type="text" id="firstName" name="firstName" class="form-input" required>
+                                </div>
+                                <div>
+                                    <label class="form-label">Apellido *</label>
+                                    <input type="text" id="lastName" name="lastName" class="form-input" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <label class="form-label">Teléfono *</label>
+                                    <input type="tel" id="phone" name="phone" class="form-input" placeholder="2646195548" required>
+                                </div>
+                                <div>
+                                    <label class="form-label">Email (opcional)</label>
+                                    <input type="email" id="email" name="email" class="form-input" placeholder="tu@email.com">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label class="form-label">Empresa (opcional)</label>
+                                <input type="text" id="company" name="company" class="form-input" placeholder="Nombre de tu empresa">
+                            </div>
+                        </div>
+
+                        <!-- Dirección de Entrega -->
+                        <div>
+                            <h3 class="text-xl font-semibold text-industrial-gray mb-4 flex items-center">
+                                <span class="w-8 h-8 bg-primary-blue text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
+                                Dirección de Entrega
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="form-label">Calle *</label>
+                                    <input type="text" id="street" name="street" class="form-input" placeholder="Av. San Martín" required>
+                                </div>
+                                <div>
+                                    <label class="form-label">Número *</label>
+                                    <input type="text" id="number" name="number" class="form-input" placeholder="1234" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                <div>
+                                    <label class="form-label">Piso (opcional)</label>
+                                    <input type="text" id="floor" name="floor" class="form-input" placeholder="3">
+                                </div>
+                                <div>
+                                    <label class="form-label">Depto (opcional)</label>
+                                    <input type="text" id="apartment" name="apartment" class="form-input" placeholder="A">
+                                </div>
+                                <div>
+                                    <label class="form-label">Barrio *</label>
+                                    <input type="text" id="neighborhood" name="neighborhood" class="form-input" placeholder="Centro" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <label class="form-label">Ciudad *</label>
+                                    <input type="text" id="city" name="city" class="form-input" value="San Juan" readonly>
+                                </div>
+                                <div>
+                                    <label class="form-label">Referencias (opcional)</label>
+                                    <input type="text" id="references" name="references" class="form-input" placeholder="Entre Calles X e Y">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Horario de Entrega -->
+                        <div>
+                            <h3 class="text-xl font-semibold text-industrial-gray mb-4 flex items-center">
+                                <span class="w-8 h-8 bg-primary-blue text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
+                                Horario Preferido
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="deliveryTime" value="morning" class="sr-only">
+                                    <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-primary-blue transition-colors">
+                                        <div class="text-2xl mb-2">🌅</div>
+                                        <div class="font-semibold">Mañana</div>
+                                        <div class="text-sm text-medium-gray">9:00 - 12:00</div>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="deliveryTime" value="afternoon" class="sr-only">
+                                    <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-primary-blue transition-colors">
+                                        <div class="text-2xl mb-2">☀️</div>
+                                        <div class="font-semibold">Tarde</div>
+                                        <div class="text-sm text-medium-gray">14:00 - 18:00</div>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="deliveryTime" value="evening" class="sr-only">
+                                    <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-primary-blue transition-colors">
+                                        <div class="text-2xl mb-2">🌆</div>
+                                        <div class="font-semibold">Noche</div>
+                                        <div class="text-sm text-medium-gray">19:00 - 21:00</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Forma de Pago -->
+                        <div>
+                            <h3 class="text-xl font-semibold text-industrial-gray mb-4 flex items-center">
+                                <span class="w-8 h-8 bg-primary-blue text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">4</span>
+                                Forma de Pago
+                            </h3>
+                            <select id="paymentMethod" name="paymentMethod" class="form-input" required>
+                                <option value="">Seleccionar forma de pago</option>
+                                <option value="Efectivo">💵 Efectivo</option>
+                                <option value="Transferencia">🏦 Transferencia Bancaria</option>
+                                <option value="Tarjeta">💳 Tarjeta de Débito/Crédito</option>
+                                <option value="Mixto">🔄 Pago Mixto (Efectivo + Transferencia)</option>
+                            </select>
+                        </div>
+
+                        <!-- Notas -->
+                        <div>
+                            <label class="form-label">Notas Adicionales (opcional)</label>
+                            <textarea id="notes" name="notes" rows="3" class="form-input resize-none" 
+                                      placeholder="Alguna instrucción especial para la entrega o el pedido..."></textarea>
+                        </div>
+
+                        <!-- Botón de Envío -->
+                        <div class="pt-6">
+                            <button type="submit" id="submit-order" class="btn-primary w-full text-lg py-4">
+                                📱 Enviar Pedido - Te contactamos para confirmar
+                            </button>
+                            <p class="text-center text-sm text-medium-gray mt-3">
+                                Al enviar tu pedido, nos contactaremos para confirmar disponibilidad y coordinar la entrega
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Resumen del Pedido -->
+                <div class="lg:col-span-1 p-8 bg-gray-50">
+                    <div class="summary-card">
+                        <h3 class="text-xl font-semibold text-industrial-gray mb-6 flex items-center">
+                            <span class="mr-2">🛒</span>
+                            Resumen del Pedido
+                        </h3>
+                        
+                        <div id="cart-items" class="space-y-4 mb-6">
+                            <!-- Items del carrito se cargarán aquí -->
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-medium-gray">Subtotal:</span>
+                                <span id="subtotal" class="font-semibold">$0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-medium-gray">Envío:</span>
+                                <span class="font-semibold text-success-green">A coordinar</span>
+                            </div>
+                            <div class="flex justify-between items-center text-lg font-bold text-industrial-gray border-t pt-2">
+                                <span>Total:</span>
+                                <span id="total" class="font-mono">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="font-semibold text-primary-blue mb-2">📞 ¿Cómo funciona?</h4>
+                            <ul class="text-sm text-medium-gray space-y-1">
+                                <li>• Enviás tu pedido online</li>
+                                <li>• Te llamamos para confirmar</li>
+                                <li>• Coordinamos entrega y pago</li>
+                                <li>• ¡Listo! Recibes tus productos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div id="confirmation-modal" class="modal-overlay fixed inset-0 z-50 hidden">
+        <div class="confirmation-modal mx-auto my-20 p-8">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-success-green rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                
+                <h3 class="text-2xl font-bold text-industrial-gray mb-4">✅ Pedido Enviado</h3>
+                <p class="text-medium-gray mb-6">
+                    Tu pedido ha sido enviado correctamente. <strong>Nos contactaremos contigo pronto</strong> para confirmar la disponibilidad y coordinar la entrega.
+                </p>
+                
+                <div class="bg-blue-50 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-primary-blue mb-2">📱 ¿Qué sigue?</h4>
+                    <ul class="text-sm text-medium-gray text-left space-y-2">
+                        <li>• Te llamaremos al número que proporcionaste</li>
+                        <li>• Confirmaremos disponibilidad de productos</li>
+                        <li>• Coordinaremos horario de entrega</li>
+                        <li>• Confirmaremos forma de pago</li>
+                    </ul>
+                </div>
+                
+                <div class="space-y-3">
+                    <button onclick="closeModal()" class="btn-primary w-full">
+                        Perfecto, entiendo el proceso
+                    </button>
+                    <button onclick="window.location.href='index.html'" class="btn-secondary w-full">
+                        Volver al Inicio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    <script>
+        let cart = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCartItems();
+            setupFormValidation();
+            setupRadioButtons();
+        });
+        
+        function loadCartItems() {
+            cart = JSON.parse(localStorage.getItem('chatard_cart')) || [];
+            const cartItemsContainer = document.getElementById('cart-items');
+            const subtotalElement = document.getElementById('subtotal');
+            const totalElement = document.getElementById('total');
+            
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="text-center py-8 text-medium-gray">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        <p>Tu carrito está vacío</p>
+                        <a href="productos.html" class="text-primary-blue hover:underline">Ver productos</a>
+                    </div>
+                `;
+                updateTotals();
+                return;
+            }
+            
+            cartItemsContainer.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="flex items-start space-x-4">
+                        <img src="${item.image || 'resources/placeholder.jpg'}" 
+                             alt="${item.name}" 
+                             class="w-16 h-16 object-cover rounded-lg"
+                             onerror="this.src='resources/placeholder.jpg'">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-industrial-gray">${item.name}</h4>
+                            <p class="text-sm text-medium-gray">Código: ${item.code}</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="updateQuantity('${item.productId}', ${item.quantity - 1})" 
+                                            class="quantity-btn">-</button>
+                                    <span class="px-3 font-semibold">${item.quantity}</span>
+                                    <button onclick="updateQuantity('${item.productId}', ${item.quantity + 1})" 
+                                            class="quantity-btn">+</button>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold">$${(item.price * item.quantity).toFixed(2)}</div>
+                                    <div class="text-sm text-medium-gray">$${item.price.toFixed(2)} c/u</div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart('${item.productId}')" 
+                                class="text-warning-red hover:text-red-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateTotals();
+        }
+        
+        function updateTotals() {
+            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            const shipping = cart.reduce((total, item) => total + (item.shippingCost || 0), 0);
+            const total = subtotal + shipping;
+            
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+        }
+        
+        function updateQuantity(productId, newQuantity) {
+            if (newQuantity <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+            
+            const item = cart.find(item => item.productId === productId);
+            if (item) {
+                item.quantity = newQuantity;
+                localStorage.setItem('chatard_cart', JSON.stringify(cart));
+                loadCartItems();
+                
+                if (window.chatardApp) {
+                    window.chatardApp.updateCartUI();
+                }
+            }
+        }
+        
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.productId !== productId);
+            localStorage.setItem('chatard_cart', JSON.stringify(cart));
+            loadCartItems();
+            
+            if (window.chatardApp) {
+                window.chatardApp.removeFromCart(productId);
+            }
+        }
+        
+        function setupFormValidation() {
+            const form = document.getElementById('checkout-form');
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            
+            inputs.forEach(input => {
+                input.addEventListener('blur', validateField);
+                input.addEventListener('input', clearErrors);
+            });
+        }
+        
+        function validateField(e) {
+            const field = e.target;
+            const value = field.value.trim();
+            
+            // Remover clase de error anterior
+            field.classList.remove('error');
+            
+            // Validaciones específicas
+            if (field.hasAttribute('required') && !value) {
+                showFieldError(field, 'Este campo es obligatorio');
+                return false;
+            }
+            
+            if (field.type === 'email' && value && !isValidEmail(value)) {
+                showFieldError(field, 'Ingresa un email válido');
+                return false;
+            }
+            
+            if (field.type === 'tel' && value && !isValidPhone(value)) {
+                showFieldError(field, 'Ingresa un teléfono válido');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        function showFieldError(field, message) {
+            field.classList.add('error');
+            
+            // Remover mensaje anterior si existe
+            const existingError = field.parentNode.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Agregar nuevo mensaje
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message text-warning-red text-sm mt-1';
+            errorDiv.textContent = message;
+            field.parentNode.appendChild(errorDiv);
+        }
+        
+        function clearErrors(e) {
+            const field = e.target;
+            field.classList.remove('error');
+            
+            const errorMessage = field.parentNode.querySelector('.error-message');
+            if (errorMessage) {
+                errorMessage.remove();
+            }
+        }
+        
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+        
+        function isValidPhone(phone) {
+            return /^\d{10,}$/.test(phone.replace(/\D/g, ''));
+        }
+        
+        function setupRadioButtons() {
+            const radioLabels = document.querySelectorAll('label[for*="deliveryTime"]');
+            const radioInputs = document.querySelectorAll('input[name="deliveryTime"]');
+            
+            radioInputs.forEach((input, index) => {
+                input.addEventListener('change', function() {
+                    // Remover selección de todos
+                    radioLabels.forEach(label => {
+                        label.querySelector('div').classList.remove('border-primary-blue', 'bg-blue-50');
+                    });
+                    
+                    // Agregar selección al actual
+                    if (this.checked) {
+                        radioLabels[index].querySelector('div').classList.add('border-primary-blue', 'bg-blue-50');
+                    }
+                });
+            });
+        }
+        
+        document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (cart.length === 0) {
+                alert('Tu carrito está vacío');
+                return;
+            }
+            
+            // Validar formulario
+            const requiredFields = this.querySelectorAll('input[required], select[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!validateField({ target: field })) {
+                    isValid = false;
+                }
+            });
+            
+            // Validar horario seleccionado
+            const deliveryTime = document.querySelector('input[name="deliveryTime"]:checked');
+            if (!deliveryTime) {
+                alert('Selecciona un horario de entrega preferido');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                return;
+            }
+            
+            // Recopilar datos del formulario
+            const formData = new FormData(this);
+            const customerData = {
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                company: formData.get('company'),
+                address: {
+                    street: formData.get('street'),
+                    number: formData.get('number'),
+                    floor: formData.get('floor'),
+                    apartment: formData.get('apartment'),
+                    neighborhood: formData.get('neighborhood'),
+                    city: formData.get('city'),
+                    references: formData.get('references')
+                }
+            };
+            
+            const orderData = {
+                orderId: generateOrderId(),
+                createdAt: new Date().toISOString(),
+                customer: customerData,
+                items: cart.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                deliveryTime: deliveryTime.value,
+                paymentMethod: formData.get('paymentMethod'),
+                notes: formData.get('notes'),
+                requestType: 'Compra de Productos',
+                status: 'pendiente_confirmacion',
+                total: cart.reduce((total, item) => total + (item.price * item.quantity), 0)
+            };
+            
+            try {
+                // Mostrar estado de envío
+                updateOrderStatus('Enviando tu pedido...', 'sent');
+                document.getElementById('submit-order').disabled = true;
+                document.getElementById('submit-order').textContent = '⏳ Enviando...';
+                
+                // Enviar a Google Form si está disponible
+                if (window.chatardApp) {
+                    window.chatardApp.submitToGoogleForm(orderData);
+                }
+                
+                // Simular envío (en producción esto sería una llamada real al servidor)
+                await simulateOrderSubmission(orderData);
+                
+                // Mostrar confirmación
+                showConfirmationModal();
+                
+                // Limpiar carrito
+                localStorage.removeItem('chatard_cart');
+                
+            } catch (error) {
+                console.error('Error enviando pedido:', error);
+                alert('Error al enviar el pedido. Por favor intenta nuevamente.');
+                
+                // Restaurar botón
+                updateOrderStatus('Completa tus datos para enviar el pedido');
+                document.getElementById('submit-order').disabled = false;
+                document.getElementById('submit-order').textContent = '📱 Enviar Pedido - Te contactamos para confirmar';
+            }
+        });
+        
+        function generateOrderId() {
+            const timestamp = Date.now().toString(36).toUpperCase();
+            const random = Math.random().toString(36).substr(2, 5).toUpperCase();
+            return `IC-${timestamp}-${random}`;
+        }
+        
+        async function simulateOrderSubmission(orderData) {
+            // Simular delay de red
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    console.log('Pedido enviado:', orderData);
+                    resolve();
+                }, 2000);
+            });
+        }
+        
+        function updateOrderStatus(message, type = 'pending') {
+            const statusElement = document.getElementById('order-status');
+            statusElement.innerHTML = `
+                <h3 class="text-xl font-semibold mb-2">${type === 'sent' ? '📤' : '📱'} ${message}</h3>
+                <p>${type === 'sent' ? 'Procesando tu pedido...' : 'Una vez enviado, nos contactaremos para confirmar disponibilidad y coordinar la entrega.'}</p>
+            `;
+            
+            if (type === 'sent') {
+                statusElement.className = 'order-status sent';
+            } else {
+                statusElement.className = 'order-status';
+            }
+        }
+        
+        function showConfirmationModal() {
+            document.getElementById('confirmation-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            document.getElementById('confirmation-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            
+            // Redirigir al inicio
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+        }
+    </script>
+</body>
+</html>

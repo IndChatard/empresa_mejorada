@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - Industria Chatard | Pedidos Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Sans+Pro:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1E40AF',
+                        'secondary-blue': '#3B82F6',
+                        'light-blue': '#60A5FA',
+                        'success-green': '#10B981',
+                        'warning-red': '#EF4444',
+                        'accent-orange': '#F59E0B',
+                        'industrial-gray': '#374151',
+                        'light-gray': '#F8FAFC',
+                        'medium-gray': '#64748B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'source': ['Source Sans Pro', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'scale-in': 'scaleIn 0.3s ease-out',
+                        'bounce-subtle': 'bounceSubtle 2s infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes bounceSubtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+            min-height: 100vh;
+        }
+        
+        .header-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .hero-products {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, #60A5FA 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 10s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(229, 231, 235, 0.6);
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+        
+        .product-card:hover::before {
+            opacity: 1;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(30, 64, 175, 0.15);
+            border-color: #3B82F6;
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #F3F4F6, #E5E7EB);
+            transition: transform 0.3s ease;
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
+        .product-content {
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .badge {
+            position: absolute;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 3;
+        }
+        
+        .badge-stock {
+            top: 16px;
+            right: 16px;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .badge-featured {
+            top: 16px;
+            left: 16px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .badge-pedido {
+            bottom: 16px;
+            right: 16px;
+            background: linear-gradient(135deg, #3B82F6, #1E40AF);
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.2);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .filter-btn {
+            background: white;
+            border: 2px solid #E5E7EB;
+            color: #374151;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            border-color: #1E40AF;
+            background: linear-gradient(135deg, #1E40AF, #3B82F6);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+        
+        .cart-icon {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        .search-box {
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E5E7EB;
+            border-top: 4px solid #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Grid System */
+        @media (min-width: 640px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 24px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 28px;
+            }
+        }
+        
+        @media (min-width: 1280px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+                gap: 32px;
+            }
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            .hero-products {
+                padding: 40px 0;
+            }
+            
+            .hero-products h1 {
+                font-size: 2.5rem;
+            }
+            
+            .filter-section {
+                padding: 16px;
+            }
+            
+            .filter-btn {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+        }
+        
+        /* Footer */
+        .footer-gradient {
+            background: linear-gradient(135deg, #374151 0%, #1F2937 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-glass sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo y nombre -->
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-primary-blue hover:text-secondary-blue transition-colors">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Volver al Inicio
+                    </a>
+                </div>
+                
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="h-12 w-12 rounded-xl overflow-hidden mr-4 shadow-lg">
+                        <img src="https://docs.google.com/drawings/d/e/2PACX-1vQAiv1hZP2zRAdVE5WcWHcET2tyhGhNChckMiSPoKKyHMErbd3X-sk_0jmkeMZv2OlwSTA5qy2-pa98/pub?w=359&h=351"
+                             alt="Logo Industria Chatard"
+                             class="h-full w-full object-cover">
+                    </div>
+                    <div>
+                        <span class="text-2xl font-bold text-primary-blue font-inter">Industria Chatard</span>
+                        <div class="text-xs text-medium-gray">🛒 Plataforma de Pedidos</div>
+                    </div>
+                </div>
+                
+                <!-- Cart -->
+                <div class="flex items-center space-x-4">
+                    <a href="cart.html" class="cart-icon relative">
+                        <svg class="w-7 h-7 text-industrial-gray hover:text-primary-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0V19a2 2 0 002 2h7a2 2 0 002-2v-4"></path>
+                        </svg>
+                        <span id="cart-count" class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-products text-white py-16 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h1 class="text-4xl md:text-6xl font-bold font-inter mb-6">
+                🛒 Productos para Pedido Online
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-4xl mx-auto">
+                Calidad industrial con <strong>entrega en San Juan</strong>. 
+                Te contactamos para confirmar disponibilidad y coordinar la entrega.
+            </p>
+            
+            <!-- Indicador de proceso -->
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <span class="text-sm font-semibold">🛍️ Seleccionás productos</span>
+                </div>
+                <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <span class="text-sm font-semibold">📞 Te confirmamos disponibilidad</span>
+                </div>
+                <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <span class="text-sm font-semibold">🚚 Coordinamos entrega</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Elementos decorativos -->
+        <div class="absolute top-10 left-10 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-bounce-subtle"></div>
+        <div class="absolute bottom-10 right-10 w-20 h-20 bg-orange-accent bg-opacity-20 rounded-full animate-bounce-subtle"></div>
+    </section>
+
+    <!-- Filtros y Búsqueda -->
+    <section class="filter-section py-8 bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Barra de búsqueda -->
+            <div class="mb-6">
+                <div class="relative max-w-md mx-auto">
+                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 text-medium-gray w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" 
+                           id="search-input" 
+                           placeholder="Buscar productos..." 
+                           class="search-box pl-12">
+                </div>
+            </div>
+            
+            <!-- Filtros de categoría -->
+            <div class="flex flex-wrap justify-center gap-3">
+                <button class="filter-btn active" data-category="todos">
+                    📦 Todos los Productos
+                </button>
+                <button class="filter-btn" data-category="piezas">
+                    🔩 Piezas Mecánicas
+                </button>
+                <button class="filter-btn" data-category="estructuras">
+                    🏗️ Estructuras
+                </button>
+                <button class="filter-btn" data-category="herramientas">
+                    🛠️ Herramientas
+                </button>
+                <button class="filter-btn" data-category="accesorios">
+                    ⚙️ Accesorios
+                </button>
+                <button class="filter-btn" data-category="repuestos">
+                    🔄 Repuestos
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Productos Grid -->
+    <section class="py-12 bg-light-gray">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Contador de productos -->
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold text-industrial-gray font-inter">
+                    <span id="product-count">Cargando productos...</span>
+                </h2>
+                <div class="text-medium-gray text-sm">
+                    💡 Tip: Hace clic en "Agregar" para añadir al carrito
+                </div>
+            </div>
+            
+            <!-- Grid de productos -->
+            <div class="product-grid" id="products-grid">
+                <!-- Loading state -->
+                <div class="col-span-full flex justify-center items-center py-20">
+                    <div class="loading-spinner"></div>
+                    <span class="ml-4 text-medium-gray text-lg">Cargando productos...</span>
+                </div>
+            </div>
+            
+            <!-- Sin resultados -->
+            <div id="no-results" class="text-center py-20 hidden">
+                <svg class="w-24 h-24 mx-auto mb-6 text-medium-gray opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2 2v-5m16 0h-2M4 13h2m13-8v4a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h2"></path>
+                </svg>
+                <h3 class="text-xl font-semibold text-industrial-gray mb-2">No se encontraron productos</h3>
+                <p class="text-medium-gray mb-6">Intenta con otros términos de búsqueda o selecciona una categoría diferente.</p>
+                <button onclick="clearFilters()" class="btn-primary">
+                    Ver Todos los Productos
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-gradient-to-r from-primary-blue via-secondary-blue to-light-blue text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold font-inter mb-4">
+                ¿No encontraste lo que buscas?
+            </h2>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">
+                Cotizamos trabajos personalizados y productos especiales. 
+                <strong>Te contactamos para coordinar todos los detalles.</strong>
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="turnos.html" class="btn-accent text-lg px-8 py-3 inline-block">
+                    📞 Solicitar Cotización
+                </a>
+                <a href="cart.html" class="btn-secondary text-lg px-8 py-3 inline-block">
+                    🛒 Ver Mi Pedido
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-gradient text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="h-10 w-10 rounded-lg overflow-hidden mr-3">
+                            <img src="https://docs.google.com/drawings/d/e/2PACX-1vQAiv1hZP2zRAdVE5WcWHcET2tyhGhNChckMiSPoKKyHMErbd3X-sk_0jmkeMZv2OlwSTA5qy2-pa98/pub?w=359&h=351"
+                                 alt="Logo Industria Chatard"
+                                 class="h-full w-full object-cover">
+                        </div>
+                        <span class="text-xl font-bold text-white font-inter">Industria Chatard</span>
+                    </div>
+                    <p class="text-gray-300 text-sm">
+                        Especialistas en soluciones metal-mecánicas desde 1998. 
+                        <strong>Tu plataforma de pedidos online</strong> con entrega en San Juan.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 font-inter">Contacto</h4>
+                    <p class="text-gray-300 text-sm mb-2">📱 Tel: (264) 619-5548</p>
+                    <p class="text-gray-300 text-sm mb-2">📧 hiperfrenosyelasticossrl@gmail.com</p>
+                    <p class="text-gray-300 text-sm">📍 AV.Circunvalación Lateral Oeste 1537, San Juan</p>
+                    <p class="text-gray-300 text-sm mt-2">🕒 Lun-Vie: 8:00-13:00 16:00-20:00 | Sáb: 8:00-13:00</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 font-inter">Proceso de Pedidos</h4>
+                    <p class="text-gray-300 text-sm mb-1">✅ 1. Seleccionás productos</p>
+                    <p class="text-gray-300 text-sm mb-1">✅ 2. Completás tus datos</p>
+                    <p class="text-gray-300 text-sm mb-1">✅ 3. Te confirmamos disponibilidad</p>
+                    <p class="text-gray-300 text-sm">✅ 4. Coordinamos entrega</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-600 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2024 Industria Chatard. Todos los derechos reservados. | 🛒 Sistema de Pedidos Online</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    
+    <script>
+        let allProducts = [];
+        let filteredProducts = [];
+        let currentCategory = 'todos';
+        let searchTerm = '';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            loadProducts();
+            updateCartUI();
+        });
+        
+        function setupEventListeners() {
+            // Búsqueda
+            document.getElementById('search-input').addEventListener('input', function(e) {
+                searchTerm = e.target.value.toLowerCase();
+                filterProducts();
+            });
+            
+            // Filtros de categoría
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Actualizar estado activo
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Aplicar filtro
+                    currentCategory = this.dataset.category;
+                    filterProducts();
+                });
+            });
+            
+            // Escuchar datos cargados
+            window.addEventListener('chatardDataLoaded', function(e) {
+                console.log('📦 Productos cargados en productos.html');
+                loadProducts();
+            });
+        }
+        
+        async function loadProducts() {
+            const productsGrid = document.getElementById('products-grid');
+            const productCount = document.getElementById('product-count');
+            
+            try {
+                if (window.chatardApp && window.chatardApp.products.length > 0) {
+                    allProducts = window.chatardApp.products.filter(p => p.active && p.stock > 0);
+                } else {
+                    // Productos de ejemplo mientras carga
+                    allProducts = [
+                        {
+                            id: 'PLA-001',
+                            name: 'Placa de Acero A36 5mm',
+                            description: 'Placa de acero al carbono cortada a medida con láser CNC',
+                            price: 1250.50,
+                            stock: 15,
+                            image: 'resources/placa-acero.jpg',
+                            code: 'PLA-5MM-001',
+                            category: 'piezas',
+                            featured: true
+                        },
+                        {
+                            id: 'EST-001',
+                            name: 'Estructura Metálica Base',
+                            description: 'Estructura base para máquinas industriales',
+                            price: 8500.00,
+                            stock: 8,
+                            image: 'resources/estructura.jpg',
+                            code: 'EST-BASE-001',
+                            category: 'estructuras',
+                            featured: false
+                        },
+                        {
+                            id: 'HER-001',
+                            name: 'Juego de Sujetadores CNC',
+                            description: 'Set de 12 sujetadores para máquinas CNC',
+                            price: 350.75,
+                            stock: 25,
+                            image: 'resources/sujetadores.jpg',
+                            code: 'HER-CNC-001',
+                            category: 'herramientas',
+                            featured: true
+                        },
+                        {
+                            id: 'REP-001',
+                            name: 'Motor Paso a Paso NEMA 23',
+                            description: 'Motor paso a paso para CNC, 1.8° por paso',
+                            price: 1200.00,
+                            stock: 6,
+                            image: 'resources/motor-nema23.jpg',
+                            code: 'MOT-NEMA23-001',
+                            category: 'repuestos',
+                            featured: false
+                        }
+                    ];
+                }
+                
+                filteredProducts = [...allProducts];
+                renderProducts();
+                updateProductCount();
+                
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+                productsGrid.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <p class="text-warning-red text-lg">Error cargando productos. Intenta recargar la página.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function filterProducts() {
+            filteredProducts = allProducts.filter(product => {
+                // Filtro por categoría
+                const categoryMatch = currentCategory === 'todos' || 
+                                     product.category === currentCategory || 
+                                     (product.allCategories && product.allCategories.includes(currentCategory));
+                
+                // Filtro por búsqueda
+                const searchMatch = !searchTerm || 
+                                  product.name.toLowerCase().includes(searchTerm) ||
+                                  product.description.toLowerCase().includes(searchTerm) ||
+                                  product.code.toLowerCase().includes(searchTerm);
+                
+                return categoryMatch && searchMatch;
+            });
+            
+            renderProducts();
+            updateProductCount();
+        }
+        
+        function renderProducts() {
+            const productsGrid = document.getElementById('products-grid');
+            const noResults = document.getElementById('no-results');
+            
+            if (filteredProducts.length === 0) {
+                productsGrid.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            
+            productsGrid.innerHTML = filteredProducts.map((product, index) => `
+                <div class="product-card animate-scale-in" style="animation-delay: ${index * 0.1}s">
+                    ${product.featured ? '<div class="badge badge-featured">⭐ Destacado</div>' : ''}
+                    ${product.stock > 0 ? '<div class="badge badge-stock">✅ Disponible</div>' : '<div class="badge" style="background: linear-gradient(135deg, #EF4444, #DC2626); color: white;">❌ Sin Stock</div>'}
+                    <div class="badge-pedido">📱 Pedido Online</div>
+                    
+                    <img src="${product.image || 'resources/placeholder.jpg'}" 
+                         alt="${product.name}" 
+                         class="product-image"
+                         onerror="this.src='resources/placeholder.jpg'">
+                    
+                    <div class="product-content">
+                        <h3 class="font-bold text-lg text-industrial-gray mb-2 font-inter">
+                            ${product.name}
+                        </h3>
+                        <p class="text-medium-gray text-sm mb-4 line-clamp-3 flex-1">
+                            ${product.description}
+                        </p>
+                        
+                        <!-- Detalles del producto -->
+                        <div class="mb-4 space-y-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-gray-500">Código:</span>
+                                <span class="font-mono text-gray-700">${product.code}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-gray-500">Stock:</span>
+                                <span class="font-semibold ${product.stock > 10 ? 'text-success-green' : 'text-accent-orange'}">
+                                    ${product.stock} unidades
+                                </span>
+                            </div>
+                            ${product.material ? `
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-gray-500">Material:</span>
+                                    <span class="text-gray-700">${product.material}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- Precio y botón -->
+                        <div class="flex justify-between items-center pt-4 border-t">
+                            <div>
+                                <div class="text-2xl font-bold text-primary-blue font-mono">
+                                    $${product.price.toFixed(2)}
+                                </div>
+                                <div class="text-xs text-medium-gray">por unidad</div>
+                            </div>
+                            <button class="btn-primary text-sm" 
+                                    onclick="addToCart('${product.id}')"
+                                    ${product.stock === 0 ? 'disabled' : ''}>
+                                ${product.stock === 0 ? 'Sin Stock' : '🛒 Agregar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateProductCount() {
+            const productCount = document.getElementById('product-count');
+            const count = filteredProducts.length;
+            const total = allProducts.length;
+            
+            if (count === total) {
+                productCount.textContent = `${total} productos disponibles`;
+            } else {
+                productCount.textContent = `${count} de ${total} productos`;
+            }
+        }
+        
+        function clearFilters() {
+            // Limpiar búsqueda
+            document.getElementById('search-input').value = '';
+            searchTerm = '';
+            
+            // Resetear filtros
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('[data-category="todos"]').classList.add('active');
+            currentCategory = 'todos';
+            
+            // Recargar productos
+            filterProducts();
+        }
+        
+        function updateCartUI() {
+            const cartCount = document.getElementById('cart-count');
+            const cart = JSON.parse(localStorage.getItem('chatard_cart')) || [];
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            if (cartCount) {
+                cartCount.textContent = count;
+                cartCount.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+        
+        // Funciones globales
+        function addToCart(productId) {
+            if (window.chatardApp) {
+                window.chatardApp.addToCart(productId);
+                updateCartUI();
+            } else {
+                showToast('Producto agregado al carrito', 'success');
+                updateCartUI();
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 bg-white rounded-lg shadow-lg border-l-4 p-4 max-w-sm z-50 transition-all duration-300`;
+            toast.classList.add(type === 'error' ? 'border-red-500' : 'border-green-success');
+            
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <span class="text-sm font-semibold ${type === 'error' ? 'text-red-600' : 'text-green-600'}">
+                        ${type === 'success' ? '✅' : '❌'} ${message}
+                    </span>
+                    <button class="ml-4 text-gray-400 hover:text-gray-600 transition-colors" 
+                            onclick="this.parentElement.parentElement.remove()">&times;</button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-100');
+            }, 10);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Pedido - Industria Chatard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Sans+Pro:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1E40AF',
+                        'secondary-blue': '#3B82F6',
+                        'light-blue': '#60A5FA',
+                        'success-green': '#10B981',
+                        'warning-red': '#EF4444',
+                        'accent-orange': '#F59E0B',
+                        'industrial-gray': '#374151',
+                        'light-gray': '#F8FAFC',
+                        'medium-gray': '#64748B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'source': ['Source Sans Pro', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+            min-height: 100vh;
+        }
+        
+        .header-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .cart-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(229, 231, 235, 0.6);
+            overflow: hidden;
+        }
+        
+        .cart-item {
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cart-item:hover {
+            border-color: #3B82F6;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .cart-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.02), rgba(16, 185, 129, 0.02));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .cart-item:hover::before {
+            opacity: 1;
+        }
+        
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #D1D5DB;
+            border-radius: 10px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .quantity-btn:hover {
+            background: #F3F4F6;
+            border-color: #3B82F6;
+            color: #3B82F6;
+            transform: scale(1.05);
+        }
+        
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background: #4B5563;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+            transform: translateY(-1px);
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #F8FAFC, #F1F5F9);
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 24px;
+            position: sticky;
+            top: 100px;
+        }
+        
+        .empty-cart {
+            background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
+            border: 2px dashed #D1D5DB;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        
+        .process-indicator {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 12px;
+        }
+        
+        .cart-icon {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .cart-container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            
+            .summary-card {
+                position: static;
+                margin-top: 24px;
+            }
+            
+            .cart-item {
+                padding: 16px;
+            }
+            
+            .empty-cart {
+                padding: 40px 20px;
+            }
+        }
+        
+        /* Footer */
+        .footer-gradient {
+            background: linear-gradient(135deg, #374151 0%, #1F2937 100%);
+        }
+    </style>
+</head>
+<body class="bg-light-gray">
+    <!-- Header -->
+    <header class="header-glass sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-primary-blue hover:text-secondary-blue transition-colors">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Volver al Inicio
+                    </a>
+                </div>
+                
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="h-12 w-12 rounded-xl overflow-hidden mr-4 shadow-lg">
+                        <img src="https://docs.google.com/drawings/d/e/2PACX-1vQAiv1hZP2zRAdVE5WcWHcET2tyhGhNChckMiSPoKKyHMErbd3X-sk_0jmkeMZv2OlwSTA5qy2-pa98/pub?w=359&h=351"
+                             alt="Logo Industria Chatard"
+                             class="h-full w-full object-cover">
+                    </div>
+                    <div>
+                        <span class="text-2xl font-bold text-primary-blue font-inter">Industria Chatard</span>
+                        <div class="text-xs text-medium-gray">🛒 Mi Pedido</div>
+                    </div>
+                </div>
+                
+                <!-- Cart -->
+                <div class="flex items-center space-x-4">
+                    <a href="cart.html" class="cart-icon relative">
+                        <svg class="w-7 h-7 text-primary-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0V19a2 2 0 002 2h7a2 2 0 002-2v-4"></path>
+                        </svg>
+                        <span id="cart-count" class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-industrial-gray font-inter mb-4">
+                🛒 Mi Pedido Actual
+            </h1>
+            <p class="text-medium-gray text-lg max-w-2xl mx-auto">
+                <strong>Te contactaremos para confirmar disponibilidad</strong> y coordinar la entrega de tus productos
+            </p>
+        </div>
+
+        <!-- Process Indicator -->
+        <div class="process-indicator">
+            <h3 class="text-xl font-semibold mb-4">📱 Proceso de Pedido</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <span>Agregás productos al carrito</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <span>Completás tus datos de entrega</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <span>Te confirmamos y coordinamos</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Content -->
+        <div class="cart-container">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Cart Items -->
+                <div class="lg:col-span-2 p-8">
+                    <div id="cart-content">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="lg:col-span-1 p-8 bg-gray-50">
+                    <div class="summary-card">
+                        <h3 class="text-xl font-semibold text-industrial-gray mb-6 flex items-center">
+                            <span class="mr-2">💰</span>
+                            Resumen del Pedido
+                        </h3>
+                        
+                        <div id="cart-summary" class="space-y-4 mb-6">
+                            <!-- Summary will be loaded here -->
+                        </div>
+                        
+                        <div class="border-t pt-4 mb-6">
+                            <div class="flex justify-between items-center text-lg font-bold text-industrial-gray">
+                                <span>Total Estimado:</span>
+                                <span id="cart-total" class="font-mono">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <button id="checkout-btn" class="btn-primary w-full" disabled>
+                                📱 Finalizar Pedido
+                            </button>
+                            <button onclick="clearCart()" class="btn-danger w-full">
+                                🗑️ Vaciar Carrito
+                            </button>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="font-semibold text-primary-blue mb-2">📞 ¿Cómo funciona?</h4>
+                            <ul class="text-sm text-medium-gray space-y-1">
+                                <li>• Completás el formulario con tus datos</li>
+                                <li>• Te llamamos para confirmar disponibilidad</li>
+                                <li>• Coordinamos horario de entrega</li>
+                                <li>• ¡Listo! Recibes tus productos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty Cart Modal -->
+    <div id="empty-cart-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-industrial-gray mb-2">Carrito Vacío</h3>
+                <p class="text-medium-gray mb-6">No tienes productos en tu pedido actual.</p>
+                <div class="space-y-3">
+                    <button onclick="closeEmptyCartModal()" class="btn-primary w-full">
+                        🛍️ Ver Productos
+                    </button>
+                    <button onclick="window.location.href='index.html'" class="btn-secondary w-full">
+                        Volver al Inicio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-gradient text-white py-12 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="h-10 w-10 rounded-lg overflow-hidden mr-3">
+                            <img src="https://docs.google.com/drawings/d/e/2PACX-1vQAiv1hZP2zRAdVE5WcWHcET2tyhGhNChckMiSPoKKyHMErbd3X-sk_0jmkeMZv2OlwSTA5qy2-pa98/pub?w=359&h=351"
+                                 alt="Logo Industria Chatard"
+                                 class="h-full w-full object-cover">
+                        </div>
+                        <span class="text-xl font-bold text-white font-inter">Industria Chatard</span>
+                    </div>
+                    <p class="text-gray-300 text-sm">
+                        Especialistas en soluciones metal-mecánicas desde 1998. 
+                        <strong>Tu plataforma de pedidos online</strong> con entrega en San Juan.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 font-inter">Contacto</h4>
+                    <p class="text-gray-300 text-sm mb-2">📱 Tel: (264) 619-5548</p>
+                    <p class="text-gray-300 text-sm mb-2">📧 hiperfrenosyelasticossrl@gmail.com</p>
+                    <p class="text-gray-300 text-sm">📍 AV.Circunvalación Lateral Oeste 1537, San Juan</p>
+                    <p class="text-gray-300 text-sm mt-2">🕒 Lun-Vie: 8:00-13:00 16:00-20:00 | Sáb: 8:00-13:00</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 font-inter">Proceso de Pedidos</h4>
+                    <p class="text-gray-300 text-sm mb-1">✅ 1. Seleccionás productos</p>
+                    <p class="text-gray-300 text-sm mb-1">✅ 2. Completás tus datos</p>
+                    <p class="text-gray-300 text-sm mb-1">✅ 3. Te confirmamos disponibilidad</p>
+                    <p class="text-gray-300 text-sm">✅ 4. Coordinamos entrega</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-600 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2024 Industria Chatard. Todos los derechos reservados. | 🛒 Sistema de Pedidos Online</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    <script>
+        let cart = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+            setupEventListeners();
+            updateCartUI();
+        });
+        
+        function setupEventListeners() {
+            // Checkout button
+            document.getElementById('checkout-btn').addEventListener('click', function() {
+                if (cart.length > 0) {
+                    window.location.href = 'checkout.html';
+                }
+            });
+            
+            // Listen for cart updates
+            window.addEventListener('chatardCartUpdated', function(e) {
+                cart = e.detail.cart;
+                loadCart();
+                updateCartUI();
+            });
+        }
+        
+        function loadCart() {
+            cart = JSON.parse(localStorage.getItem('chatard_cart')) || [];
+            const cartContent = document.getElementById('cart-content');
+            const cartSummary = document.getElementById('cart-summary');
+            const cartTotal = document.getElementById('cart-total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            if (cart.length === 0) {
+                showEmptyCart();
+                return;
+            }
+            
+            // Hide empty cart modal
+            document.getElementById('empty-cart-modal').classList.add('hidden');
+            
+            // Load cart items
+            cartContent.innerHTML = cart.map(item => {
+                const product = window.chatardApp ? window.chatardApp.products.find(p => p.id === item.productId) : null;
+                const productName = product?.name || item.name || 'Producto';
+                const productImage = product?.image || item.image || 'resources/placeholder.jpg';
+                const productCode = product?.code || item.code || 'N/A';
+                const maxStock = product?.stock || 999;
+                
+                return `
+                    <div class="cart-item">
+                        <div class="flex items-start space-x-4 relative z-10">
+                            <img src="${productImage}" 
+                                 alt="${productName}" 
+                                 class="w-24 h-24 object-cover rounded-xl"
+                                 onerror="this.src='resources/placeholder.jpg'">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-lg text-industrial-gray mb-2">${productName}</h4>
+                                <p class="text-sm text-medium-gray mb-3">Código: ${productCode}</p>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <button onclick="updateQuantity('${item.productId}', ${item.quantity - 1})" 
+                                                class="quantity-btn" ${item.quantity <= 1 ? 'disabled' : ''}>
+                                            −
+                                        </button>
+                                        <span class="px-4 py-2 bg-gray-100 rounded-lg font-semibold text-lg min-w-[3rem] text-center">
+                                            ${item.quantity}
+                                        </span>
+                                        <button onclick="updateQuantity('${item.productId}', ${item.quantity + 1})" 
+                                                class="quantity-btn" ${item.quantity >= maxStock ? 'disabled' : ''}>
+                                            +
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="text-right">
+                                        <div class="text-xl font-bold text-primary-blue font-mono">
+                                            $${(item.price * item.quantity).toFixed(2)}
+                                        </div>
+                                        <div class="text-sm text-medium-gray">
+                                            $${item.price.toFixed(2)} c/u
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between items-center mt-4">
+                                    <div class="text-sm text-medium-gray">
+                                        Stock disponible: <span class="font-semibold ${maxStock > 10 ? 'text-success-green' : 'text-accent-orange'}">${maxStock}</span>
+                                    </div>
+                                    <button onclick="removeFromCart('${item.productId}')" 
+                                            class="text-warning-red hover:text-red-600 transition-colors text-sm font-medium">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Update summary
+            updateSummary();
+            
+            // Update checkout button
+            checkoutBtn.disabled = cart.length === 0;
+            checkoutBtn.textContent = cart.length > 0 ? '📱 Finalizar Pedido' : '🛒 Agregar Productos';
+        }
+        
+        function updateSummary() {
+            const cartSummary = document.getElementById('cart-summary');
+            const cartTotal = document.getElementById('cart-total');
+            
+            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            const shipping = cart.reduce((total, item) => total + (item.shippingCost || 0), 0);
+            const total = subtotal + shipping;
+            
+            cartSummary.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="text-medium-gray">Productos (${cart.length} items):</span>
+                    <span class="font-semibold">$${subtotal.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-medium-gray">Envío:</span>
+                    <span class="font-semibold text-success-green">A coordinar</span>
+                </div>
+                <div class="flex justify-between items-center text-sm text-medium-gray">
+                    <span>⚠️ El costo de envío se confirma por teléfono</span>
+                </div>
+            `;
+            
+            cartTotal.textContent = `$${total.toFixed(2)}`;
+        }
+        
+        function showEmptyCart() {
+            const cartContent = document.getElementById('cart-content');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            cartContent.innerHTML = `
+                <div class="empty-cart">
+                    <svg class="w-24 h-24 mx-auto mb-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    <h3 class="text-2xl font-semibold text-industrial-gray mb-4">Tu carrito está vacío</h3>
+                    <p class="text-medium-gray mb-8 max-w-md mx-auto">
+                        Agregá productos a tu pedido y nosotros nos encargaremos del resto. 
+                        <strong>Te contactaremos para confirmar disponibilidad</strong> y coordinar la entrega.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="productos.html" class="btn-primary inline-block">
+                            🛍️ Ver Productos
+                        </a>
+                        <a href="index.html" class="btn-secondary inline-block">
+                            Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            checkoutBtn.disabled = true;
+            checkoutBtn.textContent = '🛒 Agregar Productos';
+            
+            document.getElementById('cart-summary').innerHTML = `
+                <div class="text-center py-8 text-medium-gray">
+                    <p>No hay productos en tu pedido</p>
+                </div>
+            `;
+            
+            document.getElementById('cart-total').textContent = '$0.00';
+        }
+        
+        function updateQuantity(productId, newQuantity) {
+            if (newQuantity <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+            
+            const item = cart.find(item => item.productId === productId);
+            if (item) {
+                const product = window.chatardApp ? window.chatardApp.products.find(p => p.id === productId) : null;
+                const maxStock = product?.stock || 999;
+                
+                if (newQuantity > maxStock) {
+                    showToast(`No puedes agregar más. Stock máximo: ${maxStock}`, 'error');
+                    return;
+                }
+                
+                item.quantity = newQuantity;
+                localStorage.setItem('chatard_cart', JSON.stringify(cart));
+                loadCart();
+                
+                if (window.chatardApp) {
+                    window.chatardApp.updateCartUI();
+                }
+            }
+        }
+        
+        function removeFromCart(productId) {
+            const item = cart.find(item => item.productId === productId);
+            const product = window.chatardApp ? window.chatardApp.products.find(p => p.id === productId) : null;
+            
+            cart = cart.filter(item => item.productId !== productId);
+            localStorage.setItem('chatard_cart', JSON.stringify(cart));
+            loadCart();
+            
+            if (window.chatardApp) {
+                window.chatardApp.removeFromCart(productId);
+            }
+            
+            showToast(`${product?.name || 'Producto'} eliminado del pedido`, 'success');
+        }
+        
+        function clearCart() {
+            if (cart.length === 0) {
+                showEmptyCartModal();
+                return;
+            }
+            
+            if (confirm('¿Estás seguro de que quieres vaciar tu carrito?')) {
+                cart = [];
+                localStorage.removeItem('chatard_cart');
+                loadCart();
+                
+                if (window.chatardApp) {
+                    window.chatardApp.clearCart();
+                }
+                
+                showToast('Carrito vaciado', 'success');
+            }
+        }
+        
+        function showEmptyCartModal() {
+            document.getElementById('empty-cart-modal').classList.remove('hidden');
+        }
+        
+        function closeEmptyCartModal() {
+            document.getElementById('empty-cart-modal').classList.add('hidden');
+        }
+        
+        function updateCartUI() {
+            const cartCount = document.getElementById('cart-count');
+            const cart = JSON.parse(localStorage.getItem('chatard_cart')) || [];
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            if (cartCount) {
+                cartCount.textContent = count;
+                cartCount.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 bg-white rounded-lg shadow-lg border-l-4 p-4 max-w-sm z-50 transition-all duration-300`;
+            toast.classList.add(type === 'error' ? 'border-red-500' : 'border-green-success');
+            
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <span class="text-sm font-semibold ${type === 'error' ? 'text-red-600' : 'text-green-600'}">
+                        ${type === 'success' ? '✅' : '❌'} ${message}
+                    </span>
+                    <button class="ml-4 text-gray-400 hover:text-gray-600 transition-colors" 
+                            onclick="this.parentElement.parentElement.remove()">&times;</button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
